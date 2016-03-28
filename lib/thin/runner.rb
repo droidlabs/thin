@@ -1,6 +1,7 @@
 require 'logger'
 require 'optparse'
 require 'yaml'
+require 'erb'
 
 module Thin
   # CLI runner.
@@ -219,7 +220,12 @@ module Thin
     private
       def load_options_from_config_file!
         if file = @options.delete(:config)
-          YAML.load_file(file).each { |key, value| @options[key.to_sym] = value }
+          compiled_file = ::ERB.new(File.read(file)).result
+          hash = YAML.load(compiled_file)
+
+          hash.each do |key, value|
+            @options[key.to_sym] = value
+          end
         end
       end
 
